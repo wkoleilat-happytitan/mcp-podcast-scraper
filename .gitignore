@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment and secrets
+.env
+config.json
+
+# Temp files
+temp/
+*.tmp
+
+# Output podcasts (optional - you may want to track these)
+podcasts/
+
+# Tracking data
+tracking.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
