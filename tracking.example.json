@@ -1,0 +1,21 @@
+{
+  "podcasts": [
+    {
+      "id": "example1",
+      "name": "Huberman Lab",
+      "feedUrl": "https://feeds.megaphone.fm/hubermanlab",
+      "enabled": true,
+      "lastChecked": null,
+      "lastEpisodeGuid": null
+    },
+    {
+      "id": "example2", 
+      "name": "Lex Fridman Podcast",
+      "feedUrl": "https://lexfridman.com/feed/podcast/",
+      "enabled": true,
+      "lastChecked": null,
+      "lastEpisodeGuid": null
+    }
+  ]
+}
+

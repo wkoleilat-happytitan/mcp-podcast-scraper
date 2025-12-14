@@ -49,7 +49,7 @@ brew install yt-dlp ffmpeg
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/mcp-podcast-scraper.git
+git clone https://github.com/wkoleilat-happytitan/mcp-podcast-scraper.git
 cd mcp-podcast-scraper
 
 # Install dependencies
@@ -68,15 +68,26 @@ npm run build
 
 ### Step 4: Configure
 
-Edit `config.json`:
+Copy the example config file and add your API key:
+
+```bash
+# Copy the example config
+cp config.example.json config.json
+
+# Edit config.json and add your Deepgram API key
+```
+
+Your `config.json` should look like:
 
 ```json
 {
   "outputDirectory": "./podcasts",
-  "deepgramApiKey": "YOUR_DEEPGRAM_API_KEY_HERE",
+  "deepgramApiKey": "YOUR_ACTUAL_DEEPGRAM_API_KEY",
   "tempDirectory": "./temp"
 }
 ```
+
+> ⚠️ **Important:** Never commit `config.json` to git - it contains your API key! The `.gitignore` already excludes it.
 
 ### Step 5: Add to Claude Code
 
@@ -111,6 +122,22 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 ```
 
 Then restart Claude Desktop.
+
+---
+
+## File Structure
+
+```
+mcp-podcast-scraper/
+├── config.example.json     # Template - copy to config.json
+├── config.json             # Your config (git-ignored, contains API key)
+├── tracking.example.json   # Example tracking file
+├── tracking.json           # Your tracked podcasts (git-ignored)
+├── podcasts/               # Your transcripts & summaries (git-ignored)
+├── src/                    # Source code
+├── dist/                   # Compiled code (git-ignored)
+└── node_modules/           # Dependencies (git-ignored)
+```
 
 ---
 
@@ -224,7 +251,7 @@ podcasts/
 | `deepgramApiKey` | Your Deepgram API key for transcription | Required |
 | `tempDirectory` | Temporary directory for audio files (auto-cleaned on startup) | `./temp` |
 
-**Environment variables:**
+**Environment variables (optional alternative to config.json):**
 - `DEEPGRAM_API_KEY`
 - `OUTPUT_DIRECTORY`
 - `TEMP_DIRECTORY`
@@ -260,7 +287,7 @@ brew install ffmpeg
 ```
 
 ### "Deepgram API key not configured"
-Make sure your `config.json` has the `deepgramApiKey` set.
+Make sure you've copied `config.example.json` to `config.json` and added your API key.
 
 ### MCP server not connecting
 1. Run `npm run build`
