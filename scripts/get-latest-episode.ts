@@ -1,19 +1,40 @@
+/**
+ * Get the latest episode from an RSS feed
+ * 
+ * Usage: npx tsx scripts/get-latest-episode.ts <rss-feed-url>
+ * Example: npx tsx scripts/get-latest-episode.ts "https://feeds.megaphone.fm/hubermanlab"
+ */
+
 import { parseFeed } from "../src/services/sources/rss.js";
 
 async function main() {
-  const feedUrl = "https://api.substack.com/feed/podcast/spotify/727e2194-baa0-46bf-b46d-46ad627b3f4c/10845.rss";
+  const args = process.argv.slice(2);
+
+  if (args.length < 1) {
+    console.log("Usage: npx tsx scripts/get-latest-episode.ts <rss-feed-url>");
+    console.log('Example: npx tsx scripts/get-latest-episode.ts "https://feeds.megaphone.fm/hubermanlab"');
+    process.exit(1);
+  }
+
+  const feedUrl = args[0];
 
   try {
+    console.log(`Fetching feed: ${feedUrl}\n`);
     const feed = await parseFeed(feedUrl);
+    
+    console.log(`Podcast: ${feed.title}`);
+    console.log(`Total episodes: ${feed.episodes.length}\n`);
+
     const latest = feed.episodes[0];
 
     if (latest) {
+      console.log("Latest Episode:");
       console.log(JSON.stringify({
         title: latest.title,
         pubDate: latest.pubDate,
         audioUrl: latest.audioUrl,
         duration: latest.duration,
-        description: latest.description.substring(0, 200) + "..."
+        description: latest.description ? latest.description.substring(0, 200) + "..." : "No description"
       }, null, 2));
     } else {
       console.log("No episodes found");

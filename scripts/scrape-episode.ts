@@ -1,21 +1,36 @@
+/**
+ * Scrape a podcast episode from an audio URL
+ * 
+ * Usage: npx tsx scripts/scrape-episode.ts <audio-url> <podcast-name> <episode-title> [date]
+ * Example: npx tsx scripts/scrape-episode.ts "https://example.com/episode.mp3" "Huberman Lab" "Sleep Episode" 2024-12-14
+ */
+
 import { downloadAudioFromUrl } from "../src/services/sources/rss.js";
 import { transcribeAudio } from "../src/services/transcription.js";
 import { saveTranscript } from "../src/services/file-manager.js";
-import { basename } from "path";
 
 async function main() {
-  const episodeInfo = {
-    title: "Why humans are AI's biggest bottleneck (and what's coming in 2026) | Alexander Embiricos (OpenAI Codex Product Lead)",
-    pubDate: "Sun, 14 Dec 2025 13:31:26 GMT",
-    audioUrl: "https://api.substack.com/feed/podcast/180365355/4955680feee2c56710e0774145580c3c.mp3?token=727e2194-baa0-46bf-b46d-46ad627b3f4c",
-    podcastName: "Lenny's Podcast"
-  };
+  const args = process.argv.slice(2);
+
+  if (args.length < 3) {
+    console.log("Usage: npx tsx scripts/scrape-episode.ts <audio-url> <podcast-name> <episode-title> [date]");
+    console.log('Example: npx tsx scripts/scrape-episode.ts "https://example.com/episode.mp3" "Huberman Lab" "Sleep Episode" 2024-12-14');
+    process.exit(1);
+  }
+
+  const [audioUrl, podcastName, title, dateArg] = args;
+  const pubDate = dateArg || new Date().toISOString().split('T')[0];
 
   try {
+    console.log(`Audio URL: ${audioUrl}`);
+    console.log(`Podcast: ${podcastName}`);
+    console.log(`Episode: ${title}`);
+    console.log(`Date: ${pubDate}\n`);
+
     console.log("Downloading audio...");
     const audioPath = await downloadAudioFromUrl(
-      episodeInfo.audioUrl,
-      `lenny-${Date.now()}.mp3`
+      audioUrl,
+      `episode-${Date.now()}.mp3`
     );
     console.log(`Audio downloaded to: ${audioPath}`);
 
@@ -25,17 +40,9 @@ async function main() {
     console.log(`Transcription complete: ${transcript.length} characters`);
 
     console.log("\nSaving transcript...");
-    const pubDate = new Date(episodeInfo.pubDate);
-    const formattedDate = pubDate.toISOString().split('T')[0]; // YYYY-MM-DD
-    const savedPath = saveTranscript(
-      episodeInfo.podcastName,
-      episodeInfo.title,
-      formattedDate,
-      transcript
-    );
+    const savedPath = saveTranscript(podcastName, title, pubDate, transcript);
     console.log(`Transcript saved to: ${savedPath}`);
 
-    // Print first 500 chars as preview
     console.log("\nTranscript preview:");
     console.log(transcript.substring(0, 500) + "...");
 
