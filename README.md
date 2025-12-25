@@ -136,6 +136,8 @@ mcp-podcast-scraper/
 ├── config.json             # Your config (git-ignored, contains API key)
 ├── tracking.example.json   # Example tracking file
 ├── tracking.json           # Your tracked podcasts (git-ignored)
+├── prompts/
+│   └── summary-prompt.md   # Customize how Claude summarizes (editable)
 ├── podcasts/               # Your transcripts & summaries (git-ignored)
 ├── src/                    # Source code
 ├── dist/                   # Compiled code (git-ignored)
