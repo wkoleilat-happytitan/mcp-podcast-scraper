@@ -7,7 +7,9 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 
-import { config } from "./config.js";
+import { readFileSync, existsSync } from "fs";
+import { join } from "path";
+import { config, getProjectRoot } from "./config.js";
 import { isYouTubeUrl, downloadAudio, getVideoInfo, searchYouTube } from "./services/sources/youtube.js";
 import { parseFeed, downloadAudioFromUrl } from "./services/sources/rss.js";
 import { transcribeAudio } from "./services/transcription.js";
@@ -28,6 +30,21 @@ import {
   removeTrackedPodcast,
   loadTrackingData,
 } from "./services/scheduler.js";
+
+/**
+ * Read the summary prompt from prompts/summary-prompt.md
+ */
+function getSummaryPrompt(): string {
+  const promptPath = join(getProjectRoot(), "prompts", "summary-prompt.md");
+  
+  if (!existsSync(promptPath)) {
+    return `No custom prompt found. Create prompts/summary-prompt.md to customize how summaries are generated.
+
+Default instructions: Summarize the podcast transcript with key insights, actionable takeaways, and notable quotes.`;
+  }
+  
+  return readFileSync(promptPath, "utf-8");
+}
 
 const server = new Server(
   {
@@ -73,7 +90,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "get_transcript",
-        description: "Read the transcript of a previously scraped episode. Use this to get the content for summarization.",
+        description: "Read the transcript of a previously scraped episode. After reading, use get_summary_prompt for summarization instructions.",
         inputSchema: {
           type: "object",
           properties: {
@@ -117,6 +134,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
           },
           required: ["podcastName", "episodeTitle", "episodeDate", "summaryText"],
+        },
+      },
+      {
+        name: "get_summary_prompt",
+        description: "Get the custom prompt/instructions for how to summarize podcasts. Read this before summarizing to follow the user's preferences.",
+        inputSchema: {
+          type: "object",
+          properties: {},
         },
       },
       {
@@ -226,6 +251,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           episodeDate: string;
           summaryText: string;
         });
+
+      case "get_summary_prompt":
+        return handleGetSummaryPrompt();
 
       case "check_new_episodes":
         return await handleCheckNewEpisodes();
@@ -423,9 +451,10 @@ ${preview}
 ---
 
 **Next steps:**
-1. Use \`get_transcript\` to read the full transcript
-2. Summarize the content
-3. Use \`save_summary\` to save your summary
+1. Use \`get_summary_prompt\` to get summarization instructions
+2. Use \`get_transcript\` to read the full transcript
+3. Generate a summary following the prompt instructions
+4. Use \`save_summary\` to save your summary
 
 \`\`\`
 get_transcript({
@@ -477,7 +506,10 @@ Use \`scrape_podcast\` to transcribe this episode first.`,
 
 ---
 
-**After summarizing, save with:**
+**Next steps:**
+1. Use \`get_summary_prompt\` to see summarization instructions (if not already done)
+2. Generate a summary following the prompt
+3. Save with \`save_summary\`:
 \`\`\`
 save_summary({
   podcastName: "${podcastName}",
@@ -519,6 +551,28 @@ async function handleSaveSummary(args: {
 **Episode:** ${episodeTitle}
 **Date:** ${episodeDate}
 **File:** ${summaryPath}`,
+      },
+    ],
+  };
+}
+
+/**
+ * Handle get_summary_prompt tool
+ */
+function handleGetSummaryPrompt() {
+  const prompt = getSummaryPrompt();
+  
+  return {
+    content: [
+      {
+        type: "text",
+        text: `## Summary Instructions
+
+${prompt}
+
+---
+
+**After reading the transcript, generate a summary following these instructions, then use \`save_summary\` to save it.**`,
       },
     ],
   };
@@ -655,7 +709,10 @@ async function handleListIncomplete() {
   });
 
   response += `---\n\n`;
-  response += `Use \`get_transcript\` to read each transcript, summarize it, then \`save_summary\` to save.\n`;
+  response += `**To summarize:**\n`;
+  response += `1. Use \`get_summary_prompt\` to see summarization instructions\n`;
+  response += `2. Use \`get_transcript\` to read each transcript\n`;
+  response += `3. Generate summary and use \`save_summary\` to save\n`;
 
   return {
     content: [

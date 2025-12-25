@@ -10,6 +10,7 @@ An MCP (Model Context Protocol) server that scrapes and transcribes podcast epis
 - 🔄 **Tracks podcasts** for new episodes
 - ⏭️ **Skips duplicates** - won't re-scrape already processed episodes
 - 📋 **Finds incomplete work** - lists episodes that need summarization
+- ✏️ **Custom summary prompts** - customize how Claude summarizes for your needs
 
 ## How It Works
 
@@ -20,9 +21,11 @@ Claude: Calls check_new_episodes() → Finds new episodes
          ↓
 Claude: Calls scrape_podcast() → Downloads & transcribes
          ↓
+Claude: Calls get_summary_prompt() → Reads your custom instructions
+         ↓
 Claude: Calls get_transcript() → Reads the transcript
          ↓
-Claude: Summarizes the content
+Claude: Summarizes following your prompt
          ↓
 Claude: Calls save_summary() → Saves the .md file
          ↓
@@ -177,6 +180,7 @@ mcp-podcast-scraper/
 |------|-------------|
 | `scrape_podcast` | Scrape & transcribe an episode. Returns file path and preview. |
 | `get_transcript` | Read the full transcript of a scraped episode. |
+| `get_summary_prompt` | Get your custom summarization instructions. |
 | `save_summary` | Save your generated summary to a markdown file. |
 | `check_new_episodes` | Check tracked podcasts for new (unscraped) episodes. |
 | `list_incomplete` | Find episodes with transcripts but no summaries. |
@@ -255,6 +259,53 @@ podcasts/
 - `DEEPGRAM_API_KEY`
 - `OUTPUT_DIRECTORY`
 - `TEMP_DIRECTORY`
+
+---
+
+## Customizing Summary Prompts
+
+Control how Claude summarizes your podcasts by editing `prompts/summary-prompt.md`.
+
+The default prompt is tailored for **Product Managers** and includes:
+- 🎯 Episode Overview
+- 💡 Key Insights for Product Managers
+- 🧠 Mental Models & Frameworks
+- 📈 Personal Development Takeaways
+- ✅ Action Items
+- 💬 Notable Quotes
+- 🔗 Related Topics
+
+### Customize for Your Needs
+
+Edit `prompts/summary-prompt.md` to:
+- Change the target audience (engineer, designer, founder, etc.)
+- Add/remove sections
+- Adjust the summary length
+- Focus on specific topics
+- Change the formatting style
+
+**Example customizations:**
+
+**For Engineers:**
+```markdown
+Focus on:
+- Technical concepts and architecture decisions
+- Implementation details worth noting
+- Tools and technologies mentioned
+- Code patterns and best practices
+```
+
+**For Founders:**
+```markdown
+Focus on:
+- Business strategy insights
+- Fundraising advice
+- Growth tactics
+- Leadership lessons
+- Mistakes to avoid
+```
+
+Claude will read this prompt before generating each summary, ensuring consistent, personalized output.
 
 ---
 
